@@ -112,6 +112,7 @@ RegisterNetEvent('qb-trunk:client:KidnapGetIn', function(veh)
                             }
                             lib.playAnim(cache.ped, "fin_ext_p1-7", "cs_devin_dual-7", 8.0, 8.0, -1, 1, 999.0, false, false, false)
                             AttachEntityToEntity(cache.ped, closestVehicle, 0, offset.x, offset.y, offset.z, 0, 0, 40.0, true, true, true, true, 1, true)
+                            RemoveAnimDict("fin_ext_p1-7")
                             TriggerServerEvent('qb-trunk:server:setTrunkBusy', plate, true)
                             inTrunk = true
                             Wait(500)
@@ -171,6 +172,7 @@ RegisterNetEvent('qb-trunk:client:GetIn', function()
                             }
                             lib.playAnim(cache.ped, "fin_ext_p1-7", "cs_devin_dual-7", 8.0, 8.0, -1, 1, 999.0, false, false, false)
                             AttachEntityToEntity(cache.ped, closestVehicle, 0, offset.x, offset.y, offset.z, 0, 0, 40.0, true, true, true, true, 1, true)
+                            RemoveAnimDict("fin_ext_p1-7")
                             TriggerServerEvent('qb-trunk:server:setTrunkBusy', plate, true)
                             inTrunk = true
                             Wait(500)
