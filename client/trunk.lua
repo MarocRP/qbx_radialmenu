@@ -156,7 +156,7 @@ end)
 RegisterNetEvent('qb-trunk:client:GetIn', function()
     local coords = GetEntityCoords(cache.ped)
     local closestVehicle = lib.getClosestVehicle(coords, 5.0, false)
-    if closestVehicle ~= 0 then
+    if closestVehicle and closestVehicle ~= 0 then
         local vehClass = GetVehicleClass(closestVehicle)
         local plate = qbx.getVehiclePlate(closestVehicle)
         if config.trunkClasses[vehClass].allowed then
@@ -195,7 +195,7 @@ RegisterNetEvent('qb-trunk:client:GetIn', function()
             exports.qbx_core:Notify(locale("error.cant_enter_trunk"), 'error', 2500)
         end
     else
-        exports.qbx_core:Notify(locale("error.no_vehicle_found"), 'error', 2500)
+        exports.qbx_core:Notify(locale('error.no_vehicle_nearby'), 'error')
     end
 end)
 

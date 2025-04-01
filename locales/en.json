@@ -16,6 +16,7 @@
     "cant_enter_trunk": "You cannot enter this trunk.",
     "already_in_trunk": "You are already in the trunk.",
     "someone_in_trunk": "Someone is already in the trunk.",
+    "no_vehicle_nearby": "No vehicle nearby",
     "cancel_task": "Cancelled"
   },
   "progress": {

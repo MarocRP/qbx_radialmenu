@@ -109,17 +109,30 @@ function setupVehicleMenu(seat)
         menu = 'vehicleMenu'
     }
 
-    local vehicleItems = {{
-        id = 'vehicle-flip',
-        label = locale('options.flip'),
-        icon = 'car-burst',
-        onSelect = function()
-            TriggerEvent('radialmenu:flipVehicle')
-            lib.hideRadial()
-        end
-    }}
+    local vehicleItems = {
+        {
+            id = 'vehicle-flip',
+            icon = 'arrows-spin',
+            label = locale('options.flip'),
+            onSelect = function()
+                TriggerEvent('radialmenu:flipVehicle')
+                lib.hideRadial()
+            end
+        },
+        {
+            id = 'getintrunk',
+            icon = 'arrows-turn-to-dots',
+            label = 'Get In Trunk',
+            onSelect = function()
+                TriggerEvent('qb-trunk:client:GetIn')
+                lib.hideRadial()
+            end
+        },
+    }
 
-    vehicleItems[#vehicleItems + 1] = convert(config.vehicleDoors)
+    if config.enableVehicleDoors then
+        vehicleItems[#vehicleItems + 1] = convert(config.vehicleDoors)
+    end
 
     if config.enableExtraMenu then
         vehicleItems[#vehicleItems + 1] = convert(config.vehicleExtras)
