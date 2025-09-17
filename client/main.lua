@@ -4,7 +4,7 @@ local config = require 'config.client'
 ------- Events --------
 -----------------------
 
-if config.vehicleSeats then
+if config.enableVehicleSeats then
     lib.onCache('vehicle', function(vehicle)
         if vehicle then
             setupVehicleMenu(true)
@@ -111,8 +111,17 @@ function setupVehicleMenu(seat)
 
     local vehicleItems = {
         {
+            id = 'vehicle-control',
+            icon = 'car-battery',
+            label = 'Vehicle Control',
+            onSelect = function()
+                TriggerEvent('ss_carcontrol:client:openPanel')
+                lib.hideRadial()
+            end
+        },
+        {
             id = 'vehicle-flip',
-            icon = 'arrows-spin',
+            icon = 'turn-up',
             label = locale('options.flip'),
             onSelect = function()
                 TriggerEvent('radialmenu:flipVehicle')
@@ -121,7 +130,7 @@ function setupVehicleMenu(seat)
         },
         {
             id = 'getintrunk',
-            icon = 'arrows-turn-to-dots',
+            icon = 'right-to-bracket',
             label = 'Get In Trunk',
             onSelect = function()
                 TriggerEvent('qb-trunk:client:GetIn')
@@ -134,7 +143,9 @@ function setupVehicleMenu(seat)
         vehicleItems[#vehicleItems + 1] = convert(config.vehicleDoors)
     end
 
-    vehicleItems[#vehicleItems + 1] = convert(config.vehicleWindows)
+    if config.enableVehicleWindows then
+        vehicleItems[#vehicleItems + 1] = convert(config.vehicleWindows)
+    end
 
     if config.enableExtraMenu then
         vehicleItems[#vehicleItems + 1] = convert(config.vehicleExtras)
