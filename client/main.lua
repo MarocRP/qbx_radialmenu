@@ -111,15 +111,6 @@ function setupVehicleMenu(seat)
 
     local vehicleItems = {
         {
-            id = 'vehicle-control',
-            icon = 'car-battery',
-            label = 'Vehicle Control',
-            onSelect = function()
-                TriggerEvent('ss_carcontrol:client:openPanel')
-                lib.hideRadial()
-            end
-        },
-        {
             id = 'vehicle-flip',
             icon = 'turn-up',
             label = locale('options.flip'),

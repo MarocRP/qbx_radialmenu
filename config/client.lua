@@ -8,7 +8,22 @@ return {
 
     flipTime = 15000,
 
-    menuItems = {
+    menuItems = {        {
+            id = 'clothing',
+            icon = 'shirt',
+            label = 'Clothing',
+            items = {
+                {
+                    id = 'dressingMenu',
+                    icon = 'person-dress',
+                    label = 'Dressing Menu',
+                    onSelect = function()
+                        TriggerEvent('ss_dresser:client:openWheel')
+                        lib.hideRadial()
+                    end
+                },
+            },
+        },
         {
             id = 'interactions',
             icon = 'hands-asl-interpreting',
