@@ -1,53 +1,6 @@
 local config = require 'config.client'
 
 -----------------------
-------- Events --------
------------------------
-
-if config.enableVehicleSeats then
-    lib.onCache('vehicle', function(vehicle)
-        if vehicle then
-            setupVehicleMenu(true)
-            local vehicleSeats = {}
-            local veh = vehicle
-            local amountOfSeats = GetVehicleModelNumberOfSeats(GetEntityModel(veh))
-
-            local seatTable = {
-                [1] = locale('options.driver_seat'),
-                [2] = locale('options.passenger_seat'),
-                [3] = locale('options.rear_left_seat'),
-                [4] = locale('options.rear_right_seat')
-            }
-
-            for i = 1, amountOfSeats do
-                vehicleSeats[#vehicleSeats + 1] = {
-                    id = 'vehicleSeat' .. i,
-                    label = seatTable[i] or locale('options.other_seats'),
-                    icon = 'caret-up',
-                    onSelect = function()
-                        if cache.vehicle then
-                            TriggerEvent('radialmenu:client:ChangeSeat', i,
-                                seatTable[i] or locale('options.other_seats'))
-                        else
-                            exports.qbx_core:Notify(locale('error.not_in_vehicle'), 'error')
-                        end
-                        lib.hideRadial()
-                    end
-                }
-            end
-
-            lib.registerRadial({
-                id = 'vehicleSeatsMenu',
-                items = vehicleSeats
-            })
-        else
-            setupVehicleMenu(false)
-        end
-    end)
-
-end
-
------------------------
 ------ Functions ------
 -----------------------
 
@@ -101,14 +54,13 @@ local function convert(tbl)
     }
 end
 
-function setupVehicleMenu(seat)
+local function setupVehicleMenu()
     local vehicleMenu = {
         id = 'vehicle',
         label = locale('options.vehicle'),
         icon = 'car',
         menu = 'vehicleMenu'
     }
-
     local vehicleItems = {
         {
             id = 'vehicle-flip',
@@ -119,48 +71,19 @@ function setupVehicleMenu(seat)
                 lib.hideRadial()
             end
         },
-        {
-            id = 'getintrunk',
-            icon = 'right-to-bracket',
-            label = 'Get In Trunk',
-            onSelect = function()
-                TriggerEvent('qb-trunk:client:GetIn')
-                lib.hideRadial()
-            end
-        },
     }
-
-    if config.enableVehicleDoors then
-        vehicleItems[#vehicleItems + 1] = convert(config.vehicleDoors)
-    end
-
-    if config.enableVehicleWindows then
-        vehicleItems[#vehicleItems + 1] = convert(config.vehicleWindows)
-    end
-
-    if config.enableExtraMenu then
-        vehicleItems[#vehicleItems + 1] = convert(config.vehicleExtras)
-    end
-
-    if config.vehicleSeats and seat then
-        vehicleItems[#vehicleItems + 1] = config.vehicleSeats
-    end
-
     lib.registerRadial({
         id = 'vehicleMenu',
         items = vehicleItems
     })
-
     lib.addRadialItem(vehicleMenu)
 end
 
 local function setupRadialMenu()
     setupVehicleMenu()
-
     for _, v in pairs(config.menuItems) do
         lib.addRadialItem(convert(v))
     end
-
     if config.gangItems[QBX.PlayerData.gang.name] then
         lib.addRadialItem(convert({
             id = 'gangInteractions',
@@ -169,11 +92,9 @@ local function setupRadialMenu()
             items = config.gangItems[QBX.PlayerData.gang.name]
         }))
     end
-
     if not config.jobItems[QBX.PlayerData.job.name] or not QBX.PlayerData.job.onduty then
         return
     end
-
     lib.addRadialItem(convert({
         id = 'jobInteractions',
         label = locale('general.job_radial'),
@@ -218,116 +139,8 @@ RegisterNetEvent('radialmenu:client:deadradial', function(isDead)
     end
 end)
 
-RegisterNetEvent('radialmenu:client:ChangeSeat', function(id, label)
-    local isSeatFree = IsVehicleSeatFree(cache.vehicle, id - 2)
-    local speed = GetEntitySpeed(cache.vehicle)
-    local hasHarness = exports.qbx_seatbelt:HasHarness()
-    if hasHarness then
-        return exports.qbx_core:Notify(locale('error.race_harness_on'), 'error')
-    end
-
-    if not isSeatFree then
-        return exports.qbx_core:Notify(locale('error.seat_occupied'), 'error')
-    end
-
-    local kmh = speed * 3.6
-
-    if kmh > 100.0 then
-        return exports.qbx_core:Notify(locale('error.vehicle_driving_fast'), 'error')
-    end
-
-    SetPedIntoVehicle(cache.ped, cache.vehicle, id - 2)
-    exports.qbx_core:Notify(locale('info.switched_seats', label))
-end)
-
-RegisterNetEvent('qb-radialmenu:trunk:client:Door', function(plate, door, open)
-    if not cache.vehicle then
-        return
-    end
-
-    local pl = qbx.getVehiclePlate(cache.vehicle)
-    if pl ~= plate then
-        return
-    end
-
-    if open then
-        SetVehicleDoorOpen(cache.vehicle, door, false, false)
-    else
-        SetVehicleDoorShut(cache.vehicle, door, false)
-    end
-end)
-
 RegisterNetEvent('qb-radialmenu:client:noPlayers', function()
     exports.qbx_core:Notify(locale('error.no_people_nearby'), 'error', 2500)
-end)
-
-RegisterNetEvent('qb-radialmenu:client:openDoor', function(id)
-    local door = id
-    local coords = GetEntityCoords(cache.ped)
-    local closestVehicle = cache.vehicle or lib.getClosestVehicle(coords, 5.0, false)
-    if closestVehicle and closestVehicle ~= 0 then
-        if closestVehicle ~= cache.vehicle then
-            local plate = qbx.getVehiclePlate(closestVehicle)
-            if GetVehicleDoorAngleRatio(closestVehicle, door) > 0.0 then
-                if not IsVehicleSeatFree(closestVehicle, -1) then
-                    TriggerServerEvent('qb-radialmenu:trunk:server:Door', false, plate, door)
-                else
-                    SetVehicleDoorShut(closestVehicle, door, false)
-                end
-            else
-                if not IsVehicleSeatFree(closestVehicle, -1) then
-                    TriggerServerEvent('qb-radialmenu:trunk:server:Door', true, plate, door)
-                else
-                    SetVehicleDoorOpen(closestVehicle, door, false, false)
-                end
-            end
-        else
-            if GetVehicleDoorAngleRatio(closestVehicle, door) > 0.0 then
-                SetVehicleDoorShut(closestVehicle, door, false)
-            else
-                SetVehicleDoorOpen(closestVehicle, door, false, false)
-            end
-        end
-    else
-        exports.qbx_core:Notify(locale('error.no_vehicle_found'), 'error', 2500)
-    end
-end)
-
-RegisterNetEvent('qbx_radialmenu:client:toggleWindows', function(id)
-    local window = id
-    local vehicle = cache.vehicle
-
-    if vehicle ~= false then
-        if IsVehicleWindowIntact(vehicle, window) then
-            RollDownWindow(vehicle, window)
-        else
-            RollUpWindow(vehicle, window)
-        end
-    else
-        exports.qbx_core:Notify(locale('error.no_vehicle_found'), 'error', 2500)
-    end
-end)
-
-RegisterNetEvent('radialmenu:client:setExtra', function(id)
-    local extra = id
-    if cache.vehicle ~= nil then
-        if cache.seat == -1 then
-            SetVehicleAutoRepairDisabled(cache.vehicle, true) -- Forces Auto Repair off when Toggling Extra [GTA 5 Niche Issue]
-            if DoesExtraExist(cache.vehicle, extra) then
-                if IsVehicleExtraTurnedOn(cache.vehicle, extra) then
-                    qbx.setVehicleExtra(cache.vehicle, extra, false)
-                    exports.qbx_core:Notify(locale('error.extra_deactivated', extra), 'error', 2500)
-                else
-                    qbx.setVehicleExtra(cache.vehicle, extra, true)
-                    exports.qbx_core:Notify(locale('success.extra_activated', extra), 'success', 2500)
-                end
-            else
-                exports.qbx_core:Notify(locale('error.extra_not_present', extra), 'error', 2500)
-            end
-        else
-            exports.qbx_core:Notify(locale('error.not_driver'), 'error', 2500)
-        end
-    end
 end)
 
 RegisterNetEvent('radialmenu:flipVehicle', function()
